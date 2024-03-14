@@ -3,6 +3,7 @@ package com.XduDailyCatalog.service;
 import com.XduDailyCatalog.dto.Result;
 import com.XduDailyCatalog.entity.Shop;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * <p>
@@ -15,4 +16,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface IShopService extends IService<Shop> {
 
     Result queryShopById(Long id);
+
+    Result updateShop(Shop shop);
+
 }
