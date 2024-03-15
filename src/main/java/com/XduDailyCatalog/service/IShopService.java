@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
  */
 public interface IShopService extends IService<Shop> {
 
-    Result queryShopById(Long id);
+    Result queryShopById(Long id) throws InterruptedException;
 
     Result updateShop(Shop shop);
 
