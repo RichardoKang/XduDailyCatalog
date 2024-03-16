@@ -8,6 +8,7 @@ import com.XduDailyCatalog.dto.Result;
 import com.XduDailyCatalog.entity.Shop;
 import com.XduDailyCatalog.mapper.ShopMapper;
 import com.XduDailyCatalog.service.IShopService;
+import com.XduDailyCatalog.utils.CacheClient;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -22,6 +23,9 @@ import java.util.concurrent.TimeUnit;
 
 import static com.XduDailyCatalog.utils.RedisConstants.*;
 import com.XduDailyCatalog.utils.RedisData;
+
+import javax.annotation.Resource;
+
 /**
  * <p>
  *  服务实现类
@@ -32,11 +36,11 @@ import com.XduDailyCatalog.utils.RedisData;
 @Service
 public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IShopService {
 
+    @Resource
     private StringRedisTemplate stringRedisTemplate;
 
-    public ShopServiceImpl(StringRedisTemplate stringRedisTemplate) {
-        this.stringRedisTemplate = stringRedisTemplate;
-    }
+    @Resource
+    private CacheClient cacheClient;
 
     @Override
     public Result queryShopById(Long id) throws InterruptedException {
@@ -47,7 +51,10 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
         // Shop = queryWithMutex(id);
 
         // 逻辑过期时间，防止缓存雪崩
-        Shop shop = queryWithLogicalExpire(id);
+        // Shop = queryWithLogicalExpire(id);
+
+        // redis类封装缓存穿透
+        Shop shop = cacheClient.queryWithPassThrough(CACHE_SHOP_KEY, id, Shop.class, this::getById, CACHE_SHOP_TTL, TimeUnit.MINUTES);
 
         if(shop == null){
             return Result.fail("商铺不存在");
